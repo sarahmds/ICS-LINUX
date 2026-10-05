@@ -13,7 +13,7 @@
 		$contct = $_POST['Contact'];
 		$comment = $_POST['comment'];
 		
-		include('connection.php');
+		require __DIR__ . '/connection.php';
 		
 		$query = 'UPDATE people set first_name ="'.$fname.'",
 				last_name ="'.$lname.'", mid_name="'.$mname.'",

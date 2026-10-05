@@ -1,7 +1,7 @@
 
 <?php
-       include('header.php');
-       include('connection.php');
+       require __DIR__ . '/header.php';
+       require __DIR__ . '/connection.php';
 ?>
 <body>
 

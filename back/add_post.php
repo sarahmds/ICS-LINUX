@@ -1,7 +1,7 @@
 
 <html>
 	<?php
-	include('connection.php');
+	require __DIR__ . '/connection.php';
 	?>   
 
 <body>

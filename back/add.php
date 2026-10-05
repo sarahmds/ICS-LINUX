@@ -1,8 +1,8 @@
 
 <?php
        
-       include('connection.php');
-       include('header.php');
+       require __DIR__ . '/connection.php';
+       require __DIR__ . '/header.php';
        
 ?>  
 <body>
