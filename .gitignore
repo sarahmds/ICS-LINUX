@@ -1,0 +1,13 @@
+# Segredos e configurações locais
+.env
+.env.*
+**/db.php
+
+# Arquivos temporários
+*.swp
+*.bak
+*.bak*
+*~
+
+# Logs
+*.log
