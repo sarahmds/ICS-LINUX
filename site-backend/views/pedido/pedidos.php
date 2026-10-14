@@ -50,41 +50,36 @@ while ($p = $produtos_result->fetch_assoc()) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Pedidos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-5">
-
-    <h2>Pedidos</h2>
+<section class="admin-content">
+    <div class="section-heading">
+        <h2>Pedidos recentes</h2>
+        <p>Registre pedidos e acompanhe seus produtos, quantidades e valores.</p>
+    </div>
 
     <!-- MENSAGENS -->
     <?php if (isset($_GET['excluido'])): ?>
-        <div class="alert alert-success">Pedido excluído com sucesso.</div>
+        <div class="alert alert-success" role="status">Pedido excluído com sucesso.</div>
     <?php endif; ?>
     <?php if (isset($_GET['criado'])): ?>
-        <div class="alert alert-success">Pedido cadastrado com sucesso.</div>
+        <div class="alert alert-success" role="status">Pedido cadastrado com sucesso.</div>
+    <?php endif; ?>
+    <?php if (isset($_GET['atualizado'])): ?>
+        <div class="alert alert-success" role="status">Pedido atualizado com sucesso.</div>
     <?php endif; ?>
 
     <!-- FORM ADICIONAR PEDIDO -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Adicionar Pedido</h5>
-            <form method="post">
-                <input type="hidden" name="acao" value="adicionar">
-
-                <div class="mb-3">
-                    <label class="form-label">Nome do Pedido</label>
-                    <input type="text" name="nome" class="form-control" required>
+    <div class="form-panel">
+        <h2>Adicionar pedido</h2>
+        <form method="post">
+            <input type="hidden" name="acao" value="adicionar">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="pedido-nome" class="form-label">Nome do pedido</label>
+                    <input id="pedido-nome" type="text" name="nome" class="form-control" required>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Produto</label>
-                    <select name="produto_id" class="form-control" required>
+                <div class="col-12 col-md-6">
+                    <label for="pedido-produto" class="form-label">Produto</label>
+                    <select id="pedido-produto" name="produto_id" class="form-select" required>
                         <option value="">Selecione um produto</option>
                         <?php foreach ($produtos as $p): ?>
                             <option value="<?= $p['id'] ?>">
@@ -93,29 +88,27 @@ while ($p = $produtos_result->fetch_assoc()) {
                         <?php endforeach; ?>
                     </select>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Data do Pedido</label>
-                    <input type="date" name="data_pedido" class="form-control" required>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="pedido-data" class="form-label">Data do pedido</label>
+                    <input id="pedido-data" type="date" name="data_pedido" class="form-control" required>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Quantidade</label>
-                    <input type="number" name="quantidade" class="form-control" min="1" required>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="pedido-quantidade" class="form-label">Quantidade</label>
+                    <input id="pedido-quantidade" type="number" name="quantidade" class="form-control" min="1" required>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Valor Total</label>
-                    <input type="number" step="0.01" name="valor_total" class="form-control" min="0.01" required>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="pedido-valor" class="form-label">Valor total (R$)</label>
+                    <input id="pedido-valor" type="number" step="0.01" name="valor_total" class="form-control" min="0.01" required>
                 </div>
-
-                <button class="btn btn-primary">Salvar Pedido</button>
-            </form>
-        </div>
+                <div class="col-12 col-sm-6 col-lg-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100">Salvar pedido</button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <!-- TABELA DE PEDIDOS -->
-    <table class="table table-bordered table-striped">
+    <div class="table-responsive">
+    <table class="table table-hover">
         <thead>
             <tr>
                 <th>ID</th>
@@ -137,19 +130,16 @@ while ($p = $produtos_result->fetch_assoc()) {
                     <td><?= $row['data_pedido'] ?></td>
                     <td><?= $row['quantidade'] ?></td>
                     <td>R$ <?= number_format($row['valor_total'], 2, ',', '.') ?></td>
-                    <td>
-                        <a href="/?pagina=editar-pedido&id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Editar</a>
-                        <a href="/?pagina=excluir-pedido&id=<?= $row['id'] ?>" class="btn btn-danger btn-sm"
->Excluir</a>
+                    <td class="table-actions">
+                        <a href="/?pagina=editar-pedido&id=<?= $row['id'] ?>" class="btn btn-outline-secondary btn-sm">Editar</a>
+                        <a href="/?pagina=excluir-pedido&id=<?= $row['id'] ?>" class="btn btn-outline-danger btn-sm">Excluir</a>
                     </td>
                 </tr>
             <?php endwhile; ?>
         <?php else: ?>
-            <tr><td colspan="7">Nenhum pedido cadastrado.</td></tr>
+            <tr><td colspan="7" class="text-center text-secondary py-4">Nenhum pedido cadastrado.</td></tr>
         <?php endif; ?>
         </tbody>
     </table>
-
-</div>
-</body>
-</html>
+    </div>
+</section>

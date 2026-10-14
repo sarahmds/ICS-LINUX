@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("isidi", $produto_id, $data_pedido, $quantidade, $valor_total, $id);
     $stmt->execute();
 
-    header("Location: /?pagina=pedidos");
+    header("Location: /?pagina=pedidos&atualizado=1");
     exit;
 }
 
@@ -31,24 +31,15 @@ if (!$pedido) die("Pedido não encontrado");
 
 $produtos = $connect->query("SELECT * FROM Produto");
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Editar Pedido</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-5">
-
-    <a href="/?pagina=pedidos" class="btn btn-secondary mb-3">← Voltar</a>
-
-    <h2>Editar Pedido</h2>
-
-    <form method="post">
+<section class="admin-content">
+    <div class="section-heading">
+        <h2>Editar pedido</h2>
+        <p>Atualize os dados e mantenha o produto associado ao pedido.</p>
+    </div>
+    <form method="post" class="form-panel">
         <div class="mb-3">
-            <label class="form-label">Produto</label>
-            <select name="produto_id" class="form-control" required>
+            <label for="pedido-produto" class="form-label">Produto</label>
+            <select id="pedido-produto" name="produto_id" class="form-select" required>
                 <?php while ($p = $produtos->fetch_assoc()): ?>
                     <option value="<?= $p['id'] ?>" <?= $p['id'] == $pedido['produto_id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($p['nome']) ?>
@@ -58,26 +49,24 @@ $produtos = $connect->query("SELECT * FROM Produto");
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Data do Pedido</label>
-            <input type="date" name="data_pedido" class="form-control"
+            <label for="pedido-data" class="form-label">Data do pedido</label>
+            <input id="pedido-data" type="date" name="data_pedido" class="form-control"
                    value="<?= $pedido['data_pedido'] ?>" required>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Quantidade</label>
-            <input type="number" name="quantidade" class="form-control"
+            <label for="pedido-quantidade" class="form-label">Quantidade</label>
+            <input id="pedido-quantidade" type="number" name="quantidade" class="form-control" min="1"
                    value="<?= $pedido['quantidade'] ?>" required>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Valor Total</label>
-            <input type="number" step="0.01" name="valor_total" class="form-control"
+            <label for="pedido-valor" class="form-label">Valor total (R$)</label>
+            <input id="pedido-valor" type="number" step="0.01" name="valor_total" class="form-control" min="0.01"
                    value="<?= $pedido['valor_total'] ?>" required>
         </div>
 
         <button class="btn btn-primary">Salvar Alterações</button>
+        <a href="/?pagina=pedidos" class="btn btn-outline-secondary">Cancelar</a>
     </form>
-
-</div>
-</body>
-</html>
+    </section>

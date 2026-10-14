@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("sdi", $nome, $valor, $id);
     $stmt->execute();
 
-    header("Location: /?pagina=produtos");
+    header("Location: /?pagina=produtos&atualizado=1");
     exit;
 }
 
@@ -24,33 +24,25 @@ $produto = $stmt->get_result()->fetch_assoc();
 
 if (!$produto) die("Produto não encontrado");
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Editar Produto</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-5">
-    <h2>Editar Produto</h2>
-
-    <form method="post">
+<section class="admin-content">
+    <div class="section-heading">
+        <h2>Editar produto</h2>
+        <p>Atualize os dados do item selecionado.</p>
+    </div>
+    <form method="post" class="form-panel">
         <div class="mb-3">
-            <label class="form-label">Nome</label>
-            <input type="text" name="nome" class="form-control"
+            <label for="produto-nome" class="form-label">Nome</label>
+            <input id="produto-nome" type="text" name="nome" class="form-control"
                    value="<?= htmlspecialchars($produto['nome']) ?>" required>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Valor</label>
-            <input type="number" step="0.01" name="valor_produto"
+            <label for="produto-valor" class="form-label">Valor (R$)</label>
+            <input id="produto-valor" type="number" step="0.01" name="valor_produto"
                    class="form-control" value="<?= $produto['valor_produto'] ?>" required>
         </div>
 
         <button class="btn btn-primary">Salvar</button>
-        <a href="/?pagina=produtos" class="btn btn-secondary">Cancelar</a>
+        <a href="/?pagina=produtos" class="btn btn-outline-secondary">Cancelar</a>
     </form>
-</div>
-</body>
-</html>
+    </section>

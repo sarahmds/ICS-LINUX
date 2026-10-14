@@ -21,27 +21,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         exit('Pedido não encontrado.');
     }
     ?>
-    <!DOCTYPE html>
-    <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Confirmar exclusão</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body>
-    <div class="container mt-5">
+    <section class="confirmation-panel">
         <h2>Confirmar exclusão</h2>
         <p>Deseja realmente excluir o pedido
             <strong><?= htmlspecialchars($pedido['nome']) ?></strong>?
         </p>
         <form method="post" action="/?pagina=excluir-pedido&amp;id=<?= $id ?>">
             <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
-            <a href="/?pagina=pedidos" class="btn btn-secondary">Cancelar</a>
+            <a href="/?pagina=pedidos" class="btn btn-outline-secondary">Cancelar</a>
         </form>
-    </div>
-    </body>
-    </html>
+    </section>
     <?php
     exit;
 }

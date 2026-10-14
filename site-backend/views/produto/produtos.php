@@ -22,65 +22,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ===================== */
 $result = $connect->query("SELECT * FROM Produto");
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Produtos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-5">
-
-    <h2>Produtos</h2>
+<section class="admin-content">
+    <div class="section-heading">
+        <h2>Produtos cadastrados</h2>
+        <p>Consulte o catálogo e mantenha os valores atualizados.</p>
+    </div>
 
     <!-- MENSAGENS -->
     <?php if (isset($_GET['erro']) && $_GET['erro'] === 'em_uso'): ?>
-        <div class="alert alert-danger">
+        <div class="alert alert-danger" role="alert">
             ⚠ Este produto está vinculado a um pedido e não pode ser excluído.
         </div>
     <?php endif; ?>
 
     <?php if (isset($_GET['excluido'])): ?>
-        <div class="alert alert-success">
+        <div class="alert alert-success" role="status">
             ✅ Produto excluído com sucesso.
         </div>
     <?php endif; ?>
 
     <?php if (isset($_GET['criado'])): ?>
-        <div class="alert alert-success">
+        <div class="alert alert-success" role="status">
             ✅ Produto cadastrado com sucesso.
         </div>
     <?php endif; ?>
+    <?php if (isset($_GET['atualizado'])): ?>
+        <div class="alert alert-success" role="status">Produto atualizado com sucesso.</div>
+    <?php endif; ?>
 
-    <!-- FORM CADASTRO -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Adicionar Produto</h5>
-            <form method="post">
-                <div class="mb-3">
-                    <label class="form-label">Nome</label>
-                    <input type="text" name="nome" class="form-control" required>
+    <div class="form-panel">
+        <h2>Adicionar produto</h2>
+        <form method="post">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-7">
+                    <label for="produto-nome" class="form-label">Nome do produto</label>
+                    <input id="produto-nome" type="text" name="nome" class="form-control" required>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Valor</label>
-                    <input type="number" step="0.01" name="valor_produto" class="form-control" required>
+                <div class="col-12 col-md-3">
+                    <label for="produto-valor" class="form-label">Valor (R$)</label>
+                    <input id="produto-valor" type="number" step="0.01" min="0" name="valor_produto" class="form-control" required>
                 </div>
-
-                <button class="btn btn-primary">Salvar</button>
-            </form>
-        </div>
+                <div class="col-12 col-md-2">
+                    <button class="btn btn-primary w-100">Salvar produto</button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <!-- TABELA -->
-    <table class="table table-bordered table-striped">
+    <div class="table-responsive">
+    <table class="table table-hover">
         <thead>
         <tr>
             <th>ID</th>
             <th>Nome</th>
             <th>Valor</th>
-            <th style="width: 180px;">Ações</th>
+            <th>Ações</th>
         </tr>
         </thead>
         <tbody>
@@ -90,12 +86,12 @@ $result = $connect->query("SELECT * FROM Produto");
                     <td><?= $p['id'] ?></td>
                     <td><?= htmlspecialchars($p['nome']) ?></td>
                     <td>R$ <?= number_format($p['valor_produto'], 2, ',', '.') ?></td>
-                    <td>
+                          <td class="table-actions">
                         <a href="?pagina=editar-produto&id=<?= $p['id'] ?>"
-                           class="btn btn-warning btn-sm">Editar</a>
+                              class="btn btn-outline-secondary btn-sm">Editar</a>
 
                         <a href="?pagina=excluir-produto&id=<?= $p['id'] ?>"
-                           class="btn btn-danger btn-sm"
+                           class="btn btn-outline-danger btn-sm"
                            onclick="return confirm('Deseja realmente excluir este produto?')">
                             Excluir
                         </a>
@@ -104,12 +100,10 @@ $result = $connect->query("SELECT * FROM Produto");
             <?php endwhile; ?>
         <?php else: ?>
             <tr>
-                <td colspan="4">Nenhum produto cadastrado.</td>
+                <td colspan="4" class="text-center text-secondary py-4">Nenhum produto cadastrado.</td>
             </tr>
         <?php endif; ?>
         </tbody>
     </table>
-
-</div>
-</body>
-</html>
+    </div>
+</section>
