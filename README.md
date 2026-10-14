@@ -1,54 +1,49 @@
-# LojaInfoWeb — Controle de estoque e pedidos
+# LojaInfoWeb
 
-Projeto acadêmico desenvolvido com PHP, Apache2, MariaDB e Bootstrap.
+Projeto acadêmico de loja virtual e controle administrativo, desenvolvido com PHP, Apache e MariaDB/MySQL.
 
-## Funcionalidades
+## Aplicação principal
 
-- Cadastro, listagem, edição e exclusão de produtos.
-- Cadastro, listagem, edição e exclusão de pedidos.
-- Relacionamento entre pedidos e produtos por chave estrangeira.
-- Painel administrativo separado do frontend.
+- `site-frontend/` — catálogo público de produtos e listagem de pedidos.
+- `site-backend/` — painel administrativo e CRUD de produtos e pedidos.
+- `confs-mysql/` — esquema e documentação do relacionamento do banco principal.
+- `confs-apache2/` — VirtualHosts de referência para os dois sites.
 
-## Arquitetura
+O Apache aponta para `site-frontend/` e `site-backend/`; mantenha esses diretórios nesses caminhos ao implantar. O painel usa autenticação Basic configurada no Apache do ambiente implantado. Preserve essa configuração e os arquivos de autenticação locais, sem adicioná-los ao Git.
 
-- **Cliente:** navegador web.
-- **Servidor WEB:** Debian Linux, Apache2 e PHP.
-- **Servidor de banco de dados:** Debian Linux e MariaDB.
-- **Frontend:** `site-frontend/`.
-- **Backend administrativo:** `site-backend/`.
+## Banco da aplicação principal
 
-## Estrutura do repositório
+`confs-mysql/schema.sql` documenta o banco `loja_db` e as tabelas `Produto` e `Pedido`. Um produto pode estar associado a vários pedidos por meio de `Pedido.produto_id`.
 
-- `confs-apache2/` — VirtualHosts do frontend e backend.
-- `confs-mysql/` — esquema SQL e diagrama ER.
-- `site-frontend/` — aplicação frontend.
-- `site-backend/` — painel administrativo e operações CRUD.
-- `apresentações/` — slides, capturas de tela e materiais da apresentação.
+Para importar o esquema, use `mysql -u <usuario> -p < confs-mysql/schema.sql` em uma instância MariaDB/MySQL.
 
-## Banco de dados
+A aplicação inclui a configuração local de conexão por `site-backend/db.php`. Esse arquivo é ignorado pelo Git e deve conter somente credenciais locais; não publique seus valores.
 
-O arquivo `confs-mysql/schema.sql` documenta a criação do banco
-e das tabelas `Produto` e `Pedido`.
+## Outros arquivos
 
-O relacionamento é de um produto para vários pedidos.
-A aplicação utiliza uma configuração local de conexão em
-`site-backend/db.php`, que não deve ser publicada com credenciais reais.
+- `examples/php-mysql/` — exemplo independente de CRUD para a tabela `people`; não faz parte da loja principal.
+- `docs/deployment-notes.md` — anotações do ambiente de implantação.
+- `docs/screenshots/` — capturas dos servidores web e de banco.
 
-## Configuração
+## Estrutura
 
-Os arquivos de `confs-apache2/` são referências para configurar
-os VirtualHosts no Apache. Revise os caminhos e os nomes de domínio
-antes de utilizá-los em outro servidor.
+```text
+.
+├── confs-apache2/
+├── confs-mysql/
+├── docs/
+│   ├── deployment-notes.md
+│   └── screenshots/
+├── examples/
+│   └── php-mysql/
+│       ├── back/
+│       ├── database/schema.sql
+│       ├── front/
+│       └── README.md
+├── site-backend/
+└── site-frontend/
+```
 
-## Testes realizados
+## Validação
 
-- Apache: configuração validada com `apache2ctl configtest`.
-- Frontend e backend: respostas HTTP 200 verificadas a partir do cliente.
-- Produtos: operações CRUD testadas.
-- Pedidos: cadastro, edição e exclusão testados.
-- PHP: arquivos da aplicação verificados com `php -l`.
-
-## Implantação em nuvem
-
-A implantação em nuvem, o DNS público e o serviço de banco gerenciado
-devem ser documentados separadamente após serem configurados e testados.
+Verifique a configuração do Apache com `apache2ctl configtest` e a sintaxe dos arquivos PHP com `php -l`. Testes de CRUD dependem do PHP com `mysqli`, do banco configurado e do arquivo local de conexão.

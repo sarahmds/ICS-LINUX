@@ -1,5 +1,5 @@
 --
--- Usage: mysql -u root -p < peopledb.sql
+-- Usage from the repository root: mysql -u <usuario> -p < examples/php-mysql/database/schema.sql
 --
 
 --
