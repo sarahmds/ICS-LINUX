@@ -444,17 +444,6 @@ body {
     margin: 16px 0 34px;
 }
 
-.continue-shopping-link {
-    color: var(--store-green);
-    font-size: .92rem;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.continue-shopping-link:hover {
-    text-decoration: underline;
-}
-
 .checkout-panel {
     display: grid;
     grid-template-columns: minmax(200px, 1fr) minmax(300px, 420px);

@@ -321,7 +321,6 @@ $cartCount = array_sum($_SESSION['cart']);
                         <?php endforeach; ?>
                     </div>
                     <div class="cart-actions">
-                        <a href="/#produtos" class="continue-shopping-link">← Continuar comprando</a>
                         <button class="btn btn-outline-secondary" type="submit">Atualizar carrinho</button>
                     </div>
                 </form>
