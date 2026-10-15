@@ -9,24 +9,34 @@ if ($database !== 'loja_db') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao']) && $_POST['acao'] === 'adicionar') {
     $nome        = trim($_POST['nome'] ?? '');
-    $produto_id  = isset($_POST['produto_id']) ? (int) $_POST['produto_id'] : 0;
+    $produto_id  = filter_input(INPUT_POST, 'produto_id', FILTER_VALIDATE_INT);
     $data_pedido = $_POST['data_pedido'] ?? '';
-    $quantidade  = isset($_POST['quantidade']) ? (int) $_POST['quantidade'] : 0;
-    $valor_total = isset($_POST['valor_total']) ? (float) $_POST['valor_total'] : 0.0;
+    $quantidade  = filter_input(INPUT_POST, 'quantidade', FILTER_VALIDATE_INT);
+    $valor_total = filter_input(INPUT_POST, 'valor_total', FILTER_VALIDATE_FLOAT);
 
-    // VALIDAÇÃO
-    if ($nome === '') die("Informe o nome do pedido.");
-    if ($produto_id <= 0) die("Selecione um produto válido.");
-    if (!$data_pedido) die("Informe a data do pedido.");
-    if ($quantidade <= 0) die("Informe uma quantidade válida.");
-    if ($valor_total <= 0) die("Informe um valor total válido.");
+    if ($nome === '' || !$produto_id || $produto_id <= 0
+        || !preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $data_pedido)
+        || !$quantidade || $quantidade <= 0 || $valor_total === false || $valor_total <= 0) {
+        http_response_code(400);
+        exit("Informe dados válidos para registrar o pedido.");
+    }
+    $data_pedido = str_replace('T', ' ', $data_pedido) . ':00';
 
     $stmt = $connect->prepare("
-        INSERT INTO Pedido (nome, produto_id, data_pedido, quantidade, valor_total)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO Pedido (nome, produto_id, data_pedido, quantidade, valor_total, status)
+        VALUES (?, ?, ?, ?, ?, 'Pendente')
     ");
+    if (!$stmt) {
+        error_log('Falha ao preparar cadastro de pedido pelo painel: ' . $connect->error);
+        http_response_code(500);
+        exit('Não foi possível registrar o pedido.');
+    }
     $stmt->bind_param("sisid", $nome, $produto_id, $data_pedido, $quantidade, $valor_total);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        error_log('Falha ao cadastrar pedido pelo painel: ' . $stmt->error);
+        http_response_code(500);
+        exit('Não foi possível registrar o pedido.');
+    }
 
     header("Location: /?pagina=pedidos&criado=1");
     exit;
@@ -39,11 +49,21 @@ $result = $connect->query("
     SELECT Pedido.*, Produto.nome AS nome_produto
     FROM Pedido
     JOIN Produto ON Pedido.produto_id = Produto.id
-    ORDER BY Pedido.data_pedido DESC
+    ORDER BY Pedido.data_pedido DESC, Pedido.id DESC
 ");
+if (!$result) {
+    error_log('Falha ao consultar pedidos: ' . $connect->error);
+    http_response_code(500);
+    exit('Não foi possível carregar os pedidos.');
+}
 
 
 $produtos_result = $connect->query("SELECT * FROM Produto ORDER BY nome ASC");
+if (!$produtos_result) {
+    error_log('Falha ao consultar produtos para cadastro de pedido: ' . $connect->error);
+    http_response_code(500);
+    exit('Não foi possível carregar os produtos.');
+}
 $produtos = [];
 while ($p = $produtos_result->fetch_assoc()) {
     $produtos[] = $p;
@@ -89,8 +109,9 @@ while ($p = $produtos_result->fetch_assoc()) {
                     </select>
                 </div>
                 <div class="col-12 col-sm-6 col-lg-3">
-                    <label for="pedido-data" class="form-label">Data do pedido</label>
-                    <input id="pedido-data" type="date" name="data_pedido" class="form-control" required>
+                    <label for="pedido-data" class="form-label">Data e hora do pedido</label>
+                    <input id="pedido-data" type="datetime-local" name="data_pedido" class="form-control"
+                           value="<?= date('Y-m-d\TH:i') ?>" required>
                 </div>
                 <div class="col-12 col-sm-6 col-lg-3">
                     <label for="pedido-quantidade" class="form-label">Quantidade</label>
@@ -117,6 +138,7 @@ while ($p = $produtos_result->fetch_assoc()) {
                 <th>Data</th>
                 <th>Quantidade</th>
                 <th>Valor Total</th>
+                <th>Status</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -127,9 +149,10 @@ while ($p = $produtos_result->fetch_assoc()) {
                     <td><?= $row['id'] ?></td>
                     <td><?= htmlspecialchars($row['nome']) ?></td>
                     <td><?= htmlspecialchars($row['nome_produto']) ?></td>
-                    <td><?= $row['data_pedido'] ?></td>
+                    <td><?= date('d/m/Y H:i', strtotime($row['data_pedido'])) ?></td>
                     <td><?= $row['quantidade'] ?></td>
                     <td>R$ <?= number_format($row['valor_total'], 2, ',', '.') ?></td>
+                    <td><?= htmlspecialchars($row['status'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td class="table-actions">
                         <a href="/?pagina=editar-pedido&id=<?= $row['id'] ?>" class="btn btn-outline-secondary btn-sm">Editar</a>
                         <a href="/?pagina=excluir-pedido&id=<?= $row['id'] ?>" class="btn btn-outline-danger btn-sm">Excluir</a>
@@ -137,7 +160,7 @@ while ($p = $produtos_result->fetch_assoc()) {
                 </tr>
             <?php endwhile; ?>
         <?php else: ?>
-            <tr><td colspan="7" class="text-center text-secondary py-4">Nenhum pedido cadastrado.</td></tr>
+            <tr><td colspan="8" class="text-center text-secondary py-4">Nenhum pedido cadastrado.</td></tr>
         <?php endif; ?>
         </tbody>
     </table>

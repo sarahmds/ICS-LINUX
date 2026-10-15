@@ -1,16 +1,58 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+session_start();
+require_once __DIR__ . '/../site-backend/db.php';
 
-include '../site-backend/db.php';
+$erroCompra = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome = $_POST['nome'] ?? null;
+    $produtoId = filter_input(INPUT_POST, 'produto_id', FILTER_VALIDATE_INT);
+    $quantidade = filter_input(INPUT_POST, 'quantidade', FILTER_VALIDATE_INT);
 
-$produtos_result = mysqli_query($connect, "SELECT id, nome, valor_produto FROM Produto ORDER BY nome ASC");
-$pedidos_result = mysqli_query($connect, "SELECT * FROM Pedido ORDER BY data_pedido DESC");
+    if (!is_string($nome) || trim($nome) === '' || !$produtoId || $produtoId <= 0
+        || !$quantidade || $quantidade <= 0) {
+        http_response_code(400);
+        $erroCompra = 'Informe seu nome e selecione um produto e uma quantidade válidos.';
+    } else {
+        $nome = trim($nome);
+        $stmt = $connect->prepare("
+            INSERT INTO Pedido (nome, produto_id, data_pedido, quantidade, valor_total, status)
+            SELECT ?, id, CURRENT_TIMESTAMP, ?, valor_produto * ?, 'Pendente'
+            FROM Produto
+            WHERE id = ?
+        ");
+        if (!$stmt) {
+            error_log('Falha ao preparar pedido da loja: ' . $connect->error);
+            http_response_code(500);
+            exit('Não foi possível registrar seu pedido.');
+        }
+        $stmt->bind_param("siii", $nome, $quantidade, $quantidade, $produtoId);
+        if (!$stmt->execute()) {
+            error_log('Falha ao registrar pedido da loja: ' . $stmt->error);
+            http_response_code(500);
+            exit('Não foi possível registrar seu pedido.');
+        }
 
-if (!$produtos_result || !$pedidos_result) {
+        if ($stmt->affected_rows !== 1) {
+            http_response_code(400);
+            $erroCompra = 'Esse produto não está mais disponível. Atualize o catálogo e tente novamente.';
+        } else {
+            $_SESSION['pedido_confirmado'] = $connect->insert_id;
+            header('Location: /', true, 303);
+            exit;
+        }
+    }
+}
+
+$pedidoConfirmado = $_SESSION['pedido_confirmado'] ?? null;
+unset($_SESSION['pedido_confirmado']);
+
+$produtos_result = $connect->query(
+    "SELECT id, nome, imagem, valor_produto FROM Produto ORDER BY nome ASC"
+);
+if (!$produtos_result) {
+    error_log('Falha ao carregar catálogo: ' . $connect->error);
     http_response_code(500);
-    die('Não foi possível carregar os dados da loja. Tente novamente mais tarde.');
+    exit('Não foi possível carregar o catálogo. Tente novamente mais tarde.');
 }
 ?>
 <!DOCTYPE html>
@@ -27,10 +69,10 @@ if (!$produtos_result || !$pedidos_result) {
 </head>
 <body>
 <header class="store-header">
-    <a class="store-brand" href="#inicio"><span class="brand-mark">L</span>LojaInfoWeb</a>
+    <a class="store-brand" href="/"><span class="brand-mark">L</span>LojaInfoWeb</a>
     <nav aria-label="Navegação principal">
         <a href="#produtos">Produtos</a>
-        <a href="#pedidos">Pedidos</a>
+        <a href="http://lojainfowebifrn.backend.biz/">Painel administrativo</a>
     </nav>
 </header>
 
@@ -45,69 +87,64 @@ if (!$produtos_result || !$pedidos_result) {
         <div class="hero-index" aria-hidden="true"><span>LOJA</span><strong>01</strong></div>
     </section>
 
+    <?php if ($pedidoConfirmado): ?>
+        <section class="purchase-message" role="status">
+            <h2>Pedido confirmado!</h2>
+            <p>Seu número de pedido é <strong>#<?= (int) $pedidoConfirmado ?></strong>. Status: Pendente.</p>
+        </section>
+    <?php endif; ?>
+    <?php if ($erroCompra !== null): ?>
+        <div class="purchase-message purchase-error" role="alert">
+            <?= htmlspecialchars($erroCompra, ENT_QUOTES, 'UTF-8') ?>
+        </div>
+    <?php endif; ?>
+
     <section class="catalog-section" id="produtos">
         <div class="section-heading">
             <div>
                 <p class="eyebrow">CATÁLOGO</p>
                 <h2>Produtos disponíveis</h2>
             </div>
-            <span class="item-count"><?= mysqli_num_rows($produtos_result) ?> itens</span>
+            <span class="item-count"><?= $produtos_result->num_rows ?> itens</span>
         </div>
-        <?php if (mysqli_num_rows($produtos_result) > 0): ?>
+        <?php if ($produtos_result->num_rows > 0): ?>
             <div class="product-grid">
-                <?php while ($produto = mysqli_fetch_assoc($produtos_result)): ?>
+                <?php while ($produto = $produtos_result->fetch_assoc()): ?>
                     <article class="product-item">
-                        <span class="product-id">ITEM <?= htmlspecialchars($produto['id']) ?></span>
-                        <h3><?= htmlspecialchars($produto['nome']) ?></h3>
+                        <?php if (!empty($produto['imagem'])): ?>
+                            <img class="product-image"
+                                 src="<?= htmlspecialchars($produto['imagem'], ENT_QUOTES, 'UTF-8') ?>"
+                                 alt="<?= htmlspecialchars($produto['nome'], ENT_QUOTES, 'UTF-8') ?>">
+                        <?php else: ?>
+                            <div class="product-image-placeholder" role="img"
+                                 aria-label="Imagem indisponível para <?= htmlspecialchars($produto['nome'], ENT_QUOTES, 'UTF-8') ?>">
+                                Imagem indisponível
+                            </div>
+                        <?php endif; ?>
+                        <span class="product-id">ITEM <?= (int) $produto['id'] ?></span>
+                        <h3><?= htmlspecialchars($produto['nome'], ENT_QUOTES, 'UTF-8') ?></h3>
                         <p class="product-price">R$ <?= number_format((float) $produto['valor_produto'], 2, ',', '.') ?></p>
+                        <form class="purchase-form" method="post" action="/">
+                            <input type="hidden" name="produto_id" value="<?= (int) $produto['id'] ?>">
+                            <label for="cliente-<?= (int) $produto['id'] ?>">Seu nome</label>
+                            <input id="cliente-<?= (int) $produto['id'] ?>" type="text" name="nome"
+                                   class="form-control" maxlength="100" autocomplete="name" required>
+                            <label for="quantidade-<?= (int) $produto['id'] ?>">Quantidade</label>
+                            <input id="quantidade-<?= (int) $produto['id'] ?>" type="number" name="quantidade"
+                                   class="form-control" min="1" value="1" required>
+                            <button class="btn btn-primary" type="submit">Confirmar compra</button>
+                        </form>
                     </article>
                 <?php endwhile; ?>
             </div>
         <?php else: ?>
-            <p class="empty-state">Ainda não há produtos cadastrados.</p>
+            <p class="empty-state">Ainda não há produtos cadastrados. Volte em breve para conferir o catálogo.</p>
         <?php endif; ?>
-    </section>
-
-    <section class="orders-section" id="pedidos">
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">ACOMPANHAMENTO</p>
-                <h2>Pedidos registrados</h2>
-            </div>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Produto ID</th>
-                        <th>Data do pedido</th>
-                        <th>Quantidade</th>
-                        <th>Valor total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php if (mysqli_num_rows($pedidos_result) > 0): ?>
-                    <?php while ($row = mysqli_fetch_assoc($pedidos_result)): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($row['id']) ?></td>
-                            <td><?= htmlspecialchars($row['nome']) ?></td>
-                            <td><?= htmlspecialchars($row['produto_id']) ?></td>
-                            <td><?= htmlspecialchars($row['data_pedido']) ?></td>
-                            <td><?= htmlspecialchars($row['quantidade']) ?></td>
-                            <td>R$ <?= number_format((float) $row['valor_total'], 2, ',', '.') ?></td>
-                        </tr>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <tr><td colspan="6" class="text-center py-4">Nenhum pedido encontrado.</td></tr>
-                <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
     </section>
 </main>
 
-<footer class="store-footer">LojaInfoWeb <span>Catálogo e gestão em um só lugar.</span></footer>
+<footer class="store-footer">
+    LojaInfoWeb <span>Catálogo e gestão em um só lugar.</span>
+</footer>
 </body>
 </html>

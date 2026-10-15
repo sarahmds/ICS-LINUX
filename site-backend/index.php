@@ -1,11 +1,20 @@
 <?php
 
+$titulos = [
+        'inicio' => 'Visão geral',
+        'pedidos' => 'Pedidos',
+        'editar-pedido' => 'Pedidos',
+        'excluir-pedido' => 'Pedidos',
+        'produtos' => 'Produtos',
+        'editar-produto' => 'Produtos',
+        'excluir-produto' => 'Produtos',
+];
 $pagina = $_GET['pagina'] ?? 'inicio';
-$titulo = match ($pagina) {
-        'pedidos', 'editar-pedido', 'excluir-pedido' => 'Pedidos',
-        'produtos', 'editar-produto', 'excluir-produto' => 'Produtos',
-        default => 'Visão geral',
-};
+if (!is_string($pagina) || !array_key_exists($pagina, $titulos)) {
+        http_response_code(404);
+        $pagina = 'inicio';
+}
+$titulo = $titulos[$pagina];
 
 ?>
 
@@ -32,6 +41,7 @@ $titulo = match ($pagina) {
                         <nav class="admin-nav" aria-label="Navegação principal">
                                 <a href="/?pagina=pedidos" <?= in_array($pagina, ['pedidos', 'editar-pedido', 'excluir-pedido'], true) ? 'aria-current="page"' : '' ?>>Pedidos</a>
                                 <a href="/?pagina=produtos" <?= in_array($pagina, ['produtos', 'editar-produto', 'excluir-produto'], true) ? 'aria-current="page"' : '' ?>>Produtos</a>
+                                <a href="http://lojainfowebifrn.com.br/">Ver vitrine</a>
                         </nav>
                 </div>
         </header>

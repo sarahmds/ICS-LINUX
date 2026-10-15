@@ -73,6 +73,32 @@ body {
     color: var(--store-green);
 }
 
+.purchase-message {
+    max-width: 1152px;
+    margin: 24px auto 0;
+    padding: 18px 22px;
+    border: 1px solid #b8d8c6;
+    border-radius: 6px;
+    background: #edf7f0;
+    color: #24543b;
+}
+
+.purchase-message h2,
+.purchase-message p {
+    margin: 0;
+}
+
+.purchase-message h2 {
+    margin-bottom: 5px;
+    font-size: 1.15rem;
+}
+
+.purchase-error {
+    border-color: #edc1bd;
+    background: #fff1f0;
+    color: #852b25;
+}
+
 .store-hero {
     position: relative;
     display: flex;
@@ -168,8 +194,7 @@ body {
     line-height: 1;
 }
 
-.catalog-section,
-.orders-section {
+.catalog-section {
     max-width: 1200px;
     margin: 0 auto;
     padding: 64px 24px;
@@ -215,6 +240,23 @@ body {
     animation: reveal .5s ease-out both;
 }
 
+.product-image,
+.product-image-placeholder {
+    display: grid;
+    width: 100%;
+    height: 190px;
+    margin-bottom: 20px;
+    place-items: center;
+    border-radius: 5px;
+    background: #edf2ee;
+    color: var(--store-muted);
+    object-fit: cover;
+}
+
+.product-image-placeholder {
+    font-size: .9rem;
+}
+
 .product-item:nth-child(2) {
     animation-delay: 70ms;
 }
@@ -244,43 +286,28 @@ body {
     font-weight: 700;
 }
 
+.purchase-form {
+    display: grid;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.purchase-form label {
+    color: #465650;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.purchase-form .btn {
+    margin-top: 8px;
+}
+
 .empty-state {
     padding: 24px;
     border: 1px dashed #b8c8bf;
     border-radius: 6px;
     color: var(--store-muted);
     text-align: center;
-}
-
-.orders-section {
-    max-width: none;
-    padding-right: max(24px, calc((100% - 1152px) / 2));
-    padding-left: max(24px, calc((100% - 1152px) / 2));
-    background: #eaf0ec;
-}
-
-.orders-section .table-responsive {
-    border: 1px solid var(--store-line);
-    border-radius: 6px;
-    background: #fff;
-}
-
-.orders-section .table {
-    min-width: 690px;
-    margin: 0;
-    font-size: .92rem;
-}
-
-.orders-section .table thead th {
-    padding: 13px 14px;
-    background: #f2f6f3;
-    color: #43544c;
-    font-size: .75rem;
-    text-transform: uppercase;
-}
-
-.orders-section .table tbody td {
-    padding: 13px 14px;
 }
 
 .store-footer {
@@ -329,8 +356,7 @@ body {
         bottom: 24px;
     }
 
-    .catalog-section,
-    .orders-section {
+    .catalog-section {
         padding-top: 46px;
         padding-bottom: 46px;
     }
@@ -370,10 +396,14 @@ body {
         bottom: 16px;
     }
 
-    .catalog-section,
-    .orders-section {
+    .catalog-section {
         padding-right: 16px;
         padding-left: 16px;
+    }
+
+    .purchase-message {
+        margin-right: 16px;
+        margin-left: 16px;
     }
 
     .section-heading h2 {
