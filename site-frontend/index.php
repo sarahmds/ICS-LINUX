@@ -9,7 +9,7 @@ if (!isset($_SESSION['cart_token'])) {
 
 function redirectToCart(): void
 {
-    header('Location: /?pagina=carrinho', true, 303);
+    header('Location: ?pagina=carrinho', true, 303);
     exit;
 }
 
@@ -197,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $_SESSION['cart'] = [];
         $_SESSION['order_success'] = true;
-        header('Location: /?pagina=carrinho', true, 303);
+        header('Location: ?pagina=carrinho', true, 303);
         exit;
     }
 
@@ -290,7 +290,7 @@ $cartCount = array_sum($_SESSION['cart']);
                 <?php if ($cartItems === []): ?>
                 <p class="empty-state">Seu carrinho está vazio. Explore o catálogo e adicione produtos para começar.</p>
                 <?php else: ?>
-                <form method="post" action="/?pagina=carrinho">
+                <form method="post" action="?pagina=carrinho">
                     <input type="hidden" name="token" value="<?= htmlspecialchars($_SESSION['cart_token'], ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="acao" value="atualizar">
                     <div class="cart-list">
@@ -331,7 +331,7 @@ $cartCount = array_sum($_SESSION['cart']);
                         <p class="checkout-total">R$ <?= number_format($cartTotalCents / 100, 2, ',', '.') ?></p>
                         <p class="checkout-note">O valor final considera as quantidades selecionadas.</p>
                     </div>
-                    <form method="post" action="/?pagina=carrinho" class="checkout-form">
+                    <form method="post" action="?pagina=carrinho" class="checkout-form">
                         <input type="hidden" name="token" value="<?= htmlspecialchars($_SESSION['cart_token'], ENT_QUOTES, 'UTF-8') ?>">
                         <input type="hidden" name="acao" value="finalizar">
                         <label for="cliente-nome">Seu nome</label>
@@ -379,7 +379,7 @@ $cartCount = array_sum($_SESSION['cart']);
                             <span class="product-id">ITEM <?= (int) $product['id'] ?></span>
                             <h2><?= htmlspecialchars($product['nome'], ENT_QUOTES, 'UTF-8') ?></h2>
                             <p class="product-price">R$ <?= number_format((float) $product['valor_produto'], 2, ',', '.') ?></p>
-                            <form class="purchase-form" method="post" action="/?pagina=carrinho">
+                            <form class="purchase-form" method="post" action="?pagina=carrinho">
                                 <input type="hidden" name="token" value="<?= htmlspecialchars($_SESSION['cart_token'], ENT_QUOTES, 'UTF-8') ?>">
                                 <input type="hidden" name="acao" value="adicionar">
                                 <input type="hidden" name="produto_id" value="<?= (int) $product['id'] ?>">
