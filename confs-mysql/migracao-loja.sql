@@ -1,4 +1,5 @@
 -- Execute uma unica vez em bancos existentes que foram criados pelo esquema anterior.
+-- Para habilitar pedidos com varios produtos, execute migracao-carrinho.sql depois.
 USE loja_db;
 
 ALTER TABLE Produto

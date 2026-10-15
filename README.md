@@ -41,6 +41,10 @@ A máquina cliente é utilizada para testar a comunicação entre as máquinas, 
 
 **Descrição:** a LojaInfoWeb é uma loja virtual com uma vitrine pública e um painel administrativo para gerenciamento de produtos e pedidos.
 
+O cliente adiciona produtos ao carrinho, ajusta as quantidades e finaliza a compra em um único pedido. Cada pedido pode conter vários itens.
+
+Para bancos existentes, execute primeiro `confs-mysql/migracao-loja.sql` e depois `confs-mysql/migracao-carrinho.sql`. Em instalações novas, importe `confs-mysql/schema.sql`.
+
 **Print:** apresentação da página inicial da loja no navegador.
 
 ![Print 01 — Definição da aplicação](SUBSTITUA PELO LINK DA IMAGEM)

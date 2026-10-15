@@ -9,11 +9,18 @@ if (!$id || $id <= 0) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    $stmt = $connect->prepare(
-        "SELECT id, nome FROM Pedido WHERE id = ?"
-    );
+    $stmt = $connect->prepare("SELECT id, nome FROM Pedido WHERE id = ?");
+    if (!$stmt) {
+        error_log('Falha ao preparar consulta de pedido para exclusão: ' . $connect->error);
+        http_response_code(500);
+        exit('Não foi possível carregar o pedido.');
+    }
     $stmt->bind_param("i", $id);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        error_log('Falha ao consultar pedido para exclusão: ' . $stmt->error);
+        http_response_code(500);
+        exit('Não foi possível carregar o pedido.');
+    }
     $pedido = $stmt->get_result()->fetch_assoc();
 
     if (!$pedido) {
@@ -23,8 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     ?>
     <section class="confirmation-panel">
         <h2>Confirmar exclusão</h2>
-        <p>Deseja realmente excluir o pedido
+        <p>Deseja realmente excluir o pedido #<?= (int) $pedido['id'] ?> de
             <strong><?= htmlspecialchars($pedido['nome']) ?></strong>?
+            Os itens do pedido também serão excluídos.
         </p>
         <form method="post" action="/?pagina=excluir-pedido&amp;id=<?= $id ?>">
             <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
@@ -34,16 +42,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     <?php
     exit;
 }
-
 $stmt = $connect->prepare("DELETE FROM Pedido WHERE id = ?");
+if (!$stmt) {
+    error_log('Falha ao preparar exclusão do pedido: ' . $connect->error);
+    http_response_code(500);
+    exit('Não foi possível excluir o pedido.');
+}
 $stmt->bind_param("i", $id);
-$stmt->execute();
-
-header("Location: /?pagina=pedidos&excluido=1");
-exit;
-$stmt = $connect->prepare("DELETE FROM Pedido WHERE id = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
+if (!$stmt->execute()) {
+    error_log('Falha ao excluir pedido: ' . $stmt->error);
+    http_response_code(500);
+    exit('Não foi possível excluir o pedido.');
+}
 
 header("Location: /?pagina=pedidos&excluido=1");
 exit;

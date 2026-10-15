@@ -8,7 +8,7 @@ if (!$id || !is_numeric($id)) {
 
 /* Verifica se o produto está em algum pedido */
 $stmt = $connect->prepare(
-    "SELECT COUNT(*) AS total FROM Pedido WHERE produto_id = ?"
+    "SELECT COUNT(*) AS total FROM PedidoItem WHERE produto_id = ?"
 );
 $stmt->bind_param("i", $id);
 $stmt->execute();

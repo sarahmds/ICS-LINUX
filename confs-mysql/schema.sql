@@ -19,13 +19,23 @@ CREATE TABLE IF NOT EXISTS Produto (
 CREATE TABLE IF NOT EXISTS Pedido (
   id INT NOT NULL AUTO_INCREMENT,
   nome VARCHAR(100) NOT NULL,
-  produto_id INT NOT NULL,
   data_pedido DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  quantidade INT NOT NULL,
   valor_total DECIMAL(10,2) NOT NULL,
   status VARCHAR(30) NOT NULL DEFAULT 'Pendente',
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS PedidoItem (
+  id INT NOT NULL AUTO_INCREMENT,
+  pedido_id INT NOT NULL,
+  produto_id INT NOT NULL,
+  quantidade INT NOT NULL,
+  valor_unitario DECIMAL(10,2) NOT NULL,
   PRIMARY KEY (id),
-  KEY fk_pedido_produto (produto_id),
-  CONSTRAINT fk_pedido_produto
+  KEY idx_pedido_item_pedido (pedido_id),
+  KEY idx_pedido_item_produto (produto_id),
+  CONSTRAINT fk_pedido_item_pedido
+    FOREIGN KEY (pedido_id) REFERENCES Pedido(id) ON DELETE CASCADE,
+  CONSTRAINT fk_pedido_item_produto
     FOREIGN KEY (produto_id) REFERENCES Produto(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
