@@ -196,8 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $_SESSION['cart'] = [];
-        $_SESSION['order_success'] = $orderId;
-        header('Location: /', true, 303);
+        $_SESSION['order_success'] = true;
+        header('Location: /?pagina=carrinho', true, 303);
         exit;
     }
 
@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit('Ação inválida.');
 }
 
-$orderSuccess = $_SESSION['order_success'] ?? null;
+$orderSuccess = $_SESSION['order_success'] ?? false;
 unset($_SESSION['order_success']);
 $notice = $_SESSION['cart_notice'] ?? null;
 unset($_SESSION['cart_notice']);
@@ -262,12 +262,6 @@ $cartCount = array_sum($_SESSION['cart']);
 </header>
 
 <main id="inicio">
-    <?php if ($orderSuccess): ?>
-        <section class="purchase-message" role="status">
-            <h2>Pedido confirmado!</h2>
-            <p>Seu número de pedido é <strong>#<?= (int) $orderSuccess ?></strong>. Status: Pendente.</p>
-        </section>
-    <?php endif; ?>
     <?php if ($notice): ?>
         <div class="purchase-message <?= $notice['type'] === 'error' ? 'purchase-error' : '' ?>" role="<?= $notice['type'] === 'error' ? 'alert' : 'status' ?>">
             <?= htmlspecialchars($notice['message'], ENT_QUOTES, 'UTF-8') ?>
@@ -276,17 +270,26 @@ $cartCount = array_sum($_SESSION['cart']);
 
     <?php if ($page === 'carrinho'): ?>
         <section class="cart-section">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">SUA COMPRA</p>
-                    <h1>Carrinho</h1>
+            <?php if ($orderSuccess): ?>
+                <div class="checkout-success" role="status">
+                    <span class="checkout-success-icon" aria-hidden="true">✓</span>
+                    <h1>Compra finalizada</h1>
                 </div>
-                <a class="btn btn-outline-secondary" href="/#produtos">Continuar comprando</a>
-            </div>
-
-            <?php if ($cartItems === []): ?>
-                <p class="empty-state">Seu carrinho está vazio. Explore o catálogo e adicione produtos para começar.</p>
             <?php else: ?>
+                <div class="section-heading cart-heading">
+                    <div>
+                        <p class="eyebrow">SUA COMPRA</p>
+                        <h1>Carrinho</h1>
+                        <p class="cart-subtitle">
+                            <?= (int) $cartCount ?> <?= $cartCount === 1 ? 'item' : 'itens' ?> no seu carrinho
+                        </p>
+                    </div>
+                    <a class="btn btn-outline-secondary" href="/#produtos">Continuar comprando</a>
+                </div>
+
+                <?php if ($cartItems === []): ?>
+                <p class="empty-state">Seu carrinho está vazio. Explore o catálogo e adicione produtos para começar.</p>
+                <?php else: ?>
                 <form method="post" action="/?pagina=carrinho">
                     <input type="hidden" name="token" value="<?= htmlspecialchars($_SESSION['cart_token'], ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="acao" value="atualizar">
@@ -301,7 +304,7 @@ $cartCount = array_sum($_SESSION['cart']);
                                 <?php endif; ?>
                                 <div class="cart-item-info">
                                     <h2><?= htmlspecialchars($item['nome'], ENT_QUOTES, 'UTF-8') ?></h2>
-                                    <p>R$ <?= number_format((float) $item['valor_produto'], 2, ',', '.') ?> por unidade</p>
+                                    <p class="cart-item-unit-price">R$ <?= number_format((float) $item['valor_produto'], 2, ',', '.') ?> <span>por unidade</span></p>
                                 </div>
                                 <label class="cart-quantity">
                                     <span>Quantidade</span>
@@ -312,20 +315,22 @@ $cartCount = array_sum($_SESSION['cart']);
                                 <strong class="cart-line-total">
                                     R$ <?= number_format(((int) round((float) $item['valor_produto'] * 100) * $item['quantidade']) / 100, 2, ',', '.') ?>
                                 </strong>
-                                <button class="btn btn-link text-danger" type="submit" name="remover"
+                                <button class="remove-item" type="submit" name="remover"
                                         value="<?= (int) $item['id'] ?>">Remover</button>
                             </article>
                         <?php endforeach; ?>
                     </div>
                     <div class="cart-actions">
+                        <a href="/#produtos" class="continue-shopping-link">← Continuar comprando</a>
                         <button class="btn btn-outline-secondary" type="submit">Atualizar carrinho</button>
                     </div>
                 </form>
 
                 <section class="checkout-panel">
-                    <div>
+                    <div class="checkout-summary">
                         <p class="eyebrow">TOTAL DA COMPRA</p>
                         <p class="checkout-total">R$ <?= number_format($cartTotalCents / 100, 2, ',', '.') ?></p>
+                        <p class="checkout-note">O valor final considera as quantidades selecionadas.</p>
                     </div>
                     <form method="post" action="/?pagina=carrinho" class="checkout-form">
                         <input type="hidden" name="token" value="<?= htmlspecialchars($_SESSION['cart_token'], ENT_QUOTES, 'UTF-8') ?>">
@@ -333,9 +338,10 @@ $cartCount = array_sum($_SESSION['cart']);
                         <label for="cliente-nome">Seu nome</label>
                         <input id="cliente-nome" type="text" name="nome" class="form-control"
                                maxlength="100" autocomplete="name" required>
-                        <button class="btn btn-primary" type="submit">Finalizar compra</button>
+                        <button class="btn btn-primary checkout-submit" type="submit">Finalizar compra</button>
                     </form>
                 </section>
+                <?php endif; ?>
             <?php endif; ?>
         </section>
     <?php else: ?>
@@ -374,7 +380,7 @@ $cartCount = array_sum($_SESSION['cart']);
                             <span class="product-id">ITEM <?= (int) $product['id'] ?></span>
                             <h2><?= htmlspecialchars($product['nome'], ENT_QUOTES, 'UTF-8') ?></h2>
                             <p class="product-price">R$ <?= number_format((float) $product['valor_produto'], 2, ',', '.') ?></p>
-                            <form class="purchase-form" method="post" action="/">
+                            <form class="purchase-form" method="post" action="/?pagina=carrinho">
                                 <input type="hidden" name="token" value="<?= htmlspecialchars($_SESSION['cart_token'], ENT_QUOTES, 'UTF-8') ?>">
                                 <input type="hidden" name="acao" value="adicionar">
                                 <input type="hidden" name="produto_id" value="<?= (int) $product['id'] ?>">
