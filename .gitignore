@@ -1,7 +1,7 @@
 # Segredos e configurações locais
 .env
 .env.*
-/config/*.local.php
+config/*.local.php
 
 # Arquivos temporários
 *.swp
@@ -16,5 +16,8 @@
 SUBIR_INFINITY/
 
 # Arquivos de credenciais legados
-/config/database.php
-/config/admin.php
+config/database.php
+config/admin.php
+
+# Apresentacoes locais grandes
+apresentacoes/*.mp4

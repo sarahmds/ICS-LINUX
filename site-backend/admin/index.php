@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 session_destroy();
                 header('Location: /admin/', true, 303);
                 exit;
-        } else {
+        } elseif (empty($_SESSION['admin_authenticated'])) {
                 http_response_code(400);
                 exit('Solicitação inválida.');
         }
@@ -101,10 +101,6 @@ if (empty($_SESSION['admin_authenticated'])) {
         </html>
         <?php
         exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $_SESSION['admin_csrf'] = bin2hex(random_bytes(32));
 }
 
 require_once dirname(__DIR__) . '/db.php';
