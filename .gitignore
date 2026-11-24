@@ -1,0 +1,20 @@
+# Segredos e configurações locais
+.env
+.env.*
+/config/*.local.php
+
+# Arquivos temporários
+*.swp
+*.bak
+*.bak*
+*~
+
+# Logs
+*.log
+
+# Arquivos temporários de implantação
+SUBIR_INFINITY/
+
+# Arquivos de credenciais legados
+/config/database.php
+/config/admin.php
